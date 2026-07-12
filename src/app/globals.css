@@ -1,0 +1,104 @@
+@import "tailwindcss";
+
+/* =============================================================================
+   Costura AP · Identidad visual
+   -----------------------------------------------------------------------------
+   Estética: elegante, delicada, moderna, minimalista. Sin exceso de color.
+   Los tres colores de marca son CONFIGURABLES desde el panel: se inyectan en
+   :root en tiempo de ejecución y sobrescriben estos valores por defecto.
+   ============================================================================= */
+
+:root {
+  /* Sobrescribibles desde academy_settings (ver <BrandColors />). */
+  --brand-primary: #8c6a5d;   /* arcilla suave: hilo y tela */
+  --brand-secondary: #3f3a36; /* gris cálido profundo */
+  --brand-accent: #c9a227;    /* dorado tenue, usado con moderación */
+}
+
+@theme inline {
+  /* Marca (dinámica) */
+  --color-brand: var(--brand-primary);
+  --color-secondary: var(--brand-secondary);
+  --color-accent: var(--brand-accent);
+
+  /* Neutros cálidos: el fondo nunca es blanco puro, se siente más delicado. */
+  --color-canvas: #faf8f6;
+  --color-surface: #ffffff;
+  --color-ink: #2b2522;
+  --color-muted: #7a716b;
+  --color-line: #e9e3dd;
+  --color-line-strong: #d8cfc6;
+
+  /* Estados. Discretos, nunca estridentes. */
+  --color-success: #2f7a58;
+  --color-success-soft: #eaf4ef;
+  --color-danger: #b0261e;
+  --color-danger-soft: #fbeceb;
+  --color-warning: #a96a08;
+  --color-warning-soft: #fdf3e5;
+  --color-info: #35617f;
+  --color-info-soft: #ecf2f6;
+
+  --radius-card: 1rem;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    /* Evita el "salto" del contenido al abrir menús o diálogos. */
+    scrollbar-gutter: stable;
+  }
+
+  /* Foco visible y consistente: accesibilidad básica, no negociable. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* En iOS un font-size < 16px en inputs provoca zoom automático al enfocar. */
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1rem);
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Respeta a quien pide menos movimiento. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer utilities {
+  /* Zona segura en celulares con notch (barra inferior de navegación). */
+  .pb-safe {
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+  }
+
+  /* Oculta la barra de scroll manteniendo el desplazamiento (carruseles). */
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
