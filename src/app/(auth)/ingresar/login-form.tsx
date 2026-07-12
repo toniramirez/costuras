@@ -55,7 +55,7 @@ export function LoginForm() {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      className="rounded-card border border-line bg-surface p-5 shadow-[0_1px_2px_rgba(43,37,34,0.04)]"
+      className="rounded-card border border-line bg-surface/80 p-5 shadow-flotante backdrop-blur-sm"
     >
       <h2 className="mb-1 text-lg font-semibold text-ink">Iniciar sesión</h2>
       <p className="mb-5 text-sm text-muted">Ingresá con el correo que te dio la academia.</p>
@@ -63,7 +63,7 @@ export function LoginForm() {
       {errorGeneral && (
         <div
           role="alert"
-          className="mb-4 flex items-start gap-2 rounded-xl bg-danger-soft px-3 py-2.5 text-sm text-danger"
+          className="animate-surgir mb-4 flex items-start gap-2 rounded-xl border-l-2 border-danger/40 bg-danger-soft px-3 py-2.5 text-sm text-danger"
         >
           <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
           <span>{errorGeneral}</span>

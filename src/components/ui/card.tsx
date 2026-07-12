@@ -1,10 +1,19 @@
+import { NumeroAnimado } from '@/components/ui/numero-animado';
 import { cn } from '@/lib/utils';
 
-export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+export function Card({
+  className,
+  interactiva = false,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement> & {
+  /** Se levanta al pasar el mouse. Solo si la tarjeta hace algo al tocarla. */
+  interactiva?: boolean;
+}) {
   return (
     <div
       className={cn(
-        'rounded-card border border-line bg-surface shadow-[0_1px_2px_rgba(43,37,34,0.04)]',
+        'rounded-card border border-line bg-surface shadow-suave',
+        interactiva && 'alzar hover:border-line-strong',
         className,
       )}
       {...props}
@@ -37,19 +46,33 @@ export function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDiv
   );
 }
 
-/** Métrica del dashboard: número grande, etiqueta discreta. */
+/**
+ * Métrica del tablero: número grande, etiqueta discreta.
+ *
+ * El número se cuenta solo al aparecer y arriba lleva un hilo del color del
+ * tono: es lo único que distingue una métrica buena de una mala de un vistazo,
+ * sin tener que leer el número.
+ *
+ * `value` acepta un número (se anima) o un texto ya formateado (no se anima:
+ * no se puede contar hacia «—»).
+ */
 export function StatCard({
   label,
   value,
+  tipo = 'entero',
   hint,
   icon,
   tone = 'neutral',
+  className,
 }: {
   label: string;
-  value: string | number;
+  /** Número crudo (en centavos si `tipo` es 'moneda') o un texto ya armado. */
+  value: number | string;
+  tipo?: 'moneda' | 'entero';
   hint?: string;
   icon?: React.ReactNode;
   tone?: 'neutral' | 'success' | 'danger' | 'warning';
+  className?: string;
 }) {
   const tonos = {
     neutral: 'text-ink',
@@ -58,13 +81,30 @@ export function StatCard({
     warning: 'text-warning',
   } as const;
 
+  const hilos = {
+    neutral: 'bg-line-strong',
+    success: 'bg-success',
+    danger: 'bg-danger',
+    warning: 'bg-warning',
+  } as const;
+
   return (
-    <Card className="p-4">
+    <Card className={cn('relative overflow-hidden p-4', className)}>
+      {/* El hilo del tono, cosido al borde de arriba. */}
+      <span
+        aria-hidden
+        className={cn('absolute inset-x-0 top-0 h-0.5', hilos[tone])}
+      />
+
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
         {icon && <span className="text-muted">{icon}</span>}
       </div>
-      <p className={cn('mt-2 text-2xl font-semibold tabular-nums', tonos[tone])}>{value}</p>
+
+      <p className={cn('mt-2 text-2xl font-semibold tabular-nums', tonos[tone])}>
+        {typeof value === 'number' ? <NumeroAnimado valor={value} tipo={tipo} /> : value}
+      </p>
+
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
     </Card>
   );

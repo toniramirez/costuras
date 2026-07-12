@@ -13,7 +13,8 @@ import {
 import { formatInTimeZone } from 'date-fns-tz';
 import { es } from 'date-fns/locale';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Puntada } from '@/components/brand/hilo';
+import { Card, CardContent, CardHeader, CardTitle, StatCard } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getAdminDashboard } from '@/lib/services/dashboard';
 import { formatDate, formatMoney, formatPeriod, formatTime, TIMEZONE } from '@/lib/format';
@@ -89,6 +90,7 @@ export default async function AdminHomePage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight text-ink">Inicio</h1>
         <p className="text-sm capitalize text-muted">{hoyTexto}</p>
+        <Puntada className="mt-4 w-16" />
       </header>
 
       {/* 1. Lo que hay que hacer. Es lo primero porque es lo único que apura. */}
@@ -108,16 +110,19 @@ export default async function AdminHomePage() {
             </div>
           </Card>
         ) : (
-          <ul className="space-y-2">
+          // `escalonar` hace que los pendientes entren uno atrás del otro, como
+          // una costura que avanza. El índice va por `--i` (ver globals.css).
+          <ul className="escalonar space-y-2">
             {pendientes.map((p) => (
               <li key={p.key}>
                 <Link
                   href={p.href}
-                  className="flex items-center gap-3 rounded-card border border-line bg-surface p-4 transition-colors hover:bg-canvas"
+                  className="alzar group flex items-center gap-3 rounded-card border border-line bg-surface p-4 shadow-suave hover:border-line-strong"
                 >
                   <span
                     className={cn(
                       'flex size-10 shrink-0 items-center justify-center rounded-full',
+                      'transition-transform duration-300 ease-[var(--ease-tela)] group-hover:scale-105',
                       p.tono === 'danger'
                         ? 'bg-danger-soft text-danger'
                         : 'bg-info-soft text-info',
@@ -129,7 +134,12 @@ export default async function AdminHomePage() {
                     <span className="block truncate text-sm font-medium text-ink">{p.titulo}</span>
                     <span className="block truncate text-sm text-muted">{p.detalle}</span>
                   </span>
-                  <ChevronRight className="size-5 shrink-0 text-muted" aria-hidden />
+                  {/* La flecha se corre al pasar el mouse: dice «esto te lleva
+                      a otro lado» sin agregar una palabra. */}
+                  <ChevronRight
+                    className="size-5 shrink-0 text-muted transition-transform duration-300 ease-[var(--ease-tela)] group-hover:translate-x-0.5 group-hover:text-brand"
+                    aria-hidden
+                  />
                 </Link>
               </li>
             ))}
@@ -140,7 +150,7 @@ export default async function AdminHomePage() {
       {/* 2. Las tres cosas que se hacen todos los días, a un toque. */}
       <section className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Ir directo a</h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="escalonar grid grid-cols-1 gap-3 sm:grid-cols-3">
           <AccesoRapido
             href="/admin/asistencia"
             icon={<CalendarCheck className="size-5" aria-hidden />}
@@ -170,18 +180,23 @@ export default async function AdminHomePage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Numero label="Alumnos activos" valor={String(d.alumnos.activos)} />
-          <Numero label="Cobrado" valor={formatMoney(d.finanzas.ingresos)} tono="success" />
-          <Numero
+        {/* Los cuatro números se cuentan solos al aparecer, escalonados. Cada uno
+            lleva cosido arriba un hilo del color de su tono: se ve si el mes
+            viene bien o mal antes de leer una sola cifra. */}
+        <div className="escalonar grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard label="Alumnos activos" value={d.alumnos.activos} />
+          <StatCard label="Cobrado" value={d.finanzas.ingresos} tipo="moneda" tone="success" />
+          <StatCard
             label="Falta cobrar"
-            valor={formatMoney(d.cuotas.totalPorCobrar)}
-            tono={d.cuotas.totalPorCobrar > 0 ? 'danger' : 'neutral'}
+            value={d.cuotas.totalPorCobrar}
+            tipo="moneda"
+            tone={d.cuotas.totalPorCobrar > 0 ? 'danger' : 'neutral'}
           />
-          <Numero
+          <StatCard
             label="Resultado"
-            valor={formatMoney(d.finanzas.resultado)}
-            tono={d.finanzas.resultado >= 0 ? 'success' : 'danger'}
+            value={d.finanzas.resultado}
+            tipo="moneda"
+            tone={d.finanzas.resultado >= 0 ? 'success' : 'danger'}
           />
         </div>
       </section>
@@ -228,36 +243,12 @@ function AccesoRapido({
   return (
     <Link
       href={href}
-      className="flex min-h-16 items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-sm font-medium text-ink transition-colors hover:border-brand hover:bg-brand/5"
+      className="alzar group flex min-h-16 items-center gap-3 rounded-card border border-line bg-surface px-4 py-3 text-sm font-medium text-ink shadow-suave hover:border-brand hover:bg-brand/5"
     >
-      <span className="text-brand">{icon}</span>
+      <span className="text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:scale-110">
+        {icon}
+      </span>
       {label}
     </Link>
-  );
-}
-
-/** Un número del mes. Grande el número, chica la etiqueta. */
-function Numero({
-  label,
-  valor,
-  tono = 'neutral',
-}: {
-  label: string;
-  valor: string;
-  tono?: 'neutral' | 'success' | 'danger';
-}) {
-  const tonos = {
-    neutral: 'text-ink',
-    success: 'text-success',
-    danger: 'text-danger',
-  } as const;
-
-  return (
-    <Card className="p-4">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">{label}</p>
-      <p className={cn('mt-1.5 text-xl font-semibold tabular-nums sm:text-2xl', tonos[tono])}>
-        {valor}
-      </p>
-    </Card>
   );
 }

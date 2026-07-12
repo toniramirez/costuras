@@ -1,13 +1,18 @@
 import { cn } from '@/lib/utils';
 import type { Tone } from '@/lib/labels';
 
+/**
+ * El anillo (`ring-1` hacia adentro) es lo que separa una insignia del fondo de
+ * la fila sin tener que subirle la saturación al relleno. Así el estado se lee
+ * igual de bien y la pantalla no se llena de manchas de color.
+ */
 const TONOS: Record<Tone, string> = {
-  neutral: 'bg-line/60 text-muted',
-  success: 'bg-success-soft text-success',
-  danger: 'bg-danger-soft text-danger',
-  warning: 'bg-warning-soft text-warning',
-  info: 'bg-info-soft text-info',
-  brand: 'bg-brand/10 text-brand',
+  neutral: 'bg-line/50 text-muted ring-line-strong/60',
+  success: 'bg-success-soft text-success ring-success/20',
+  danger: 'bg-danger-soft text-danger ring-danger/20',
+  warning: 'bg-warning-soft text-warning ring-warning/20',
+  info: 'bg-info-soft text-info ring-info/20',
+  brand: 'bg-brand/10 text-brand ring-brand/20',
 };
 
 export function Badge({
@@ -22,7 +27,8 @@ export function Badge({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium whitespace-nowrap',
+        'inline-flex items-center whitespace-nowrap rounded-full px-2.5 py-0.5',
+        'text-xs font-medium ring-1 ring-inset',
         TONOS[tone],
         className,
       )}

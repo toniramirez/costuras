@@ -1,11 +1,20 @@
 @import "tailwindcss";
 
 /* =============================================================================
-   Costura AP · Identidad visual
+   Costura AP · Sistema visual «Hilo»
    -----------------------------------------------------------------------------
-   Estética: elegante, delicada, moderna, minimalista. Sin exceso de color.
+   La marca es un hilo. Todo el lenguaje visual sale de ahí:
+
+     · la PUNTADA    es el separador  — línea discontinua, nunca una regla sólida
+     · el HILO       es el movimiento — los trazos se dibujan solos (dashoffset)
+     · el CARRETEL   es la espera     — gira, no parpadea
+     · la TELA       es la curva      — todo se asienta, nada rebota
+
+   Estética: elegante, delicada, artesanal. Sin exceso de color.
+
    Los tres colores de marca son CONFIGURABLES desde el panel: se inyectan en
-   :root en tiempo de ejecución y sobrescriben estos valores por defecto.
+   :root en tiempo de ejecución y sobrescriben estos valores por defecto. Nada
+   acá abajo puede hardcodearlos: siempre se usan a través de var(--brand-*).
    ============================================================================= */
 
 :root {
@@ -13,6 +22,24 @@
   --brand-primary: #8c6a5d;   /* arcilla suave: hilo y tela */
   --brand-secondary: #3f3a36; /* gris cálido profundo */
   --brand-accent: #c9a227;    /* dorado tenue, usado con moderación */
+
+  /* --------------------------------------------------------------------------
+     Curvas y tiempos. Una sola familia para toda la app.
+
+     `--ease-tela` sobrepasa apenas y vuelve, como una tela que cae y se asienta.
+     No es un rebote: un rebote es de goma, y acá nada es de goma.
+     -------------------------------------------------------------------------- */
+  --ease-tela: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-suave: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --t-rapido: 150ms;
+  --t-medio: 320ms;
+  --t-lento: 620ms;
+
+  /* Sombras cálidas: la sombra tiene el color de la tinta, nunca negro puro. */
+  --sombra-1: 0 1px 2px rgba(43, 37, 34, 0.05);
+  --sombra-2: 0 2px 4px rgba(43, 37, 34, 0.05), 0 6px 16px -8px rgba(43, 37, 34, 0.14);
+  --sombra-3: 0 4px 8px rgba(43, 37, 34, 0.06), 0 16px 40px -12px rgba(43, 37, 34, 0.2);
 }
 
 @theme inline {
@@ -41,6 +68,112 @@
 
   --radius-card: 1rem;
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  --shadow-suave: var(--sombra-1);
+  --shadow-alzado: var(--sombra-2);
+  --shadow-flotante: var(--sombra-3);
+
+  --ease-tela: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---------------------------------------------------------------------------
+     Animaciones expuestas como utilidades de Tailwind (`animate-surgir`, …).
+     --------------------------------------------------------------------------- */
+  /* ---------------------------------------------------------------------------
+     `backwards` y NO `both`. Es la diferencia entre que el realce al pasar el
+     mouse funcione o no.
+
+     Con `both`, la animación conserva su último fotograma para siempre — y ese
+     fotograma incluye `transform: none`. El estado final de una animación le
+     gana en la cascada a cualquier transición, así que una tarjeta que entra con
+     `surgir` y además tiene `.alzar` NUNCA se levantaría: el hover cambiaría la
+     transformación y la animación, ya terminada, la seguiría pisando.
+
+     Con `backwards` el elemento toma el primer fotograma durante el retraso
+     (entra desde abajo, invisible, igual que antes) y al terminar SUELTA la
+     propiedad. Como el fotograma final es idéntico al estado natural
+     (opacidad 1, sin desplazamiento), no se ve ningún salto — pero el
+     `transform` vuelve a quedar libre para el hover.
+     --------------------------------------------------------------------------- */
+  --animate-surgir: surgir var(--t-lento) var(--ease-tela) backwards;
+  --animate-aparecer: aparecer var(--t-medio) var(--ease-suave) backwards;
+  --animate-escala: escala var(--t-medio) var(--ease-tela) backwards;
+  --animate-carretel: carretel 900ms linear infinite;
+  --animate-hilar: hilar 1.4s var(--ease-suave) infinite;
+  --animate-seda: seda 1.8s var(--ease-suave) infinite;
+  --animate-puntada: puntada 1s linear infinite;
+  --animate-flotar: flotar 6s ease-in-out infinite;
+}
+
+/* =============================================================================
+   Fotogramas
+   ============================================================================= */
+
+/* Entrada estándar: sube desde abajo mientras aparece. Es el único gesto de
+   entrada de la app — si algo entra, entra así. */
+@keyframes surgir {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes aparecer {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes escala {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* El hilo se dibuja solo. `--largo` lo fija cada trazo según su longitud real
+   (una curva larga y una corta no pueden compartir el mismo dash). */
+@keyframes dibujar-hilo {
+  from { stroke-dashoffset: var(--largo, 1000); }
+  to { stroke-dashoffset: 0; }
+}
+
+/* La puntada avanza: el guión se corre y parece que alguien está cosiendo.
+   El valor negativo la hace correr hacia adelante, no hacia atrás. */
+@keyframes puntada {
+  to { stroke-dashoffset: -12; }
+}
+
+/* El carretel gira. Es la espera de esta app: un carrete de hilo, no un aro. */
+@keyframes carretel {
+  to { transform: rotate(360deg); }
+}
+
+/* Hilo que se tensa y se afloja: espera dentro de un botón. */
+@keyframes hilar {
+  0%   { stroke-dashoffset: 48; }
+  50%  { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -48; }
+}
+
+/* Brillo de seda que barre de izquierda a derecha: la carga de los esqueletos.
+   No es un `pulse` gris: la tela brilla, no late. */
+@keyframes seda {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* Deriva lenta del fondo decorativo. Amplitud chica: tiene que notarse solo si
+   uno se queda mirando. */
+@keyframes flotar {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-10px) rotate(0.6deg); }
 }
 
 @layer base {
@@ -77,13 +210,79 @@
     text-wrap: balance;
   }
 
-  /* Respeta a quien pide menos movimiento. */
+  /* -----------------------------------------------------------------------
+     El diálogo entra y SALE animado, sin una línea de JavaScript.
+
+     Animar la entrada de un <dialog> es fácil; animar la salida siempre obligó
+     a JS (esperar la animación antes de llamar a .close()). Ya no:
+       · `@starting-style` da el estado desde el que entra;
+       · `allow-discrete` permite transicionar `display` y `overlay`, que son
+         propiedades discretas — sin eso el diálogo desaparece de golpe al
+         cerrarse y la animación de salida no se llega a ver.
+
+     Si el navegador no lo soporta, el diálogo abre y cierra sin animación: se
+     degrada solo, nunca se rompe.
+     ----------------------------------------------------------------------- */
+  dialog {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+    transition:
+      opacity var(--t-medio) var(--ease-tela),
+      transform var(--t-medio) var(--ease-tela),
+      overlay var(--t-medio) var(--ease-tela) allow-discrete,
+      display var(--t-medio) var(--ease-tela) allow-discrete;
+  }
+
+  dialog[open] {
+    opacity: 1;
+    transform: none;
+  }
+
+  @starting-style {
+    dialog[open] {
+      opacity: 0;
+      transform: scale(0.96) translateY(8px);
+    }
+  }
+
+  dialog::backdrop {
+    background-color: rgb(43 37 34 / 0);
+    backdrop-filter: blur(0px);
+    transition:
+      background-color var(--t-medio) var(--ease-suave),
+      backdrop-filter var(--t-medio) var(--ease-suave),
+      overlay var(--t-medio) var(--ease-suave) allow-discrete,
+      display var(--t-medio) var(--ease-suave) allow-discrete;
+  }
+
+  dialog[open]::backdrop {
+    background-color: rgb(43 37 34 / 0.4);
+    backdrop-filter: blur(2px);
+  }
+
+  @starting-style {
+    dialog[open]::backdrop {
+      background-color: rgb(43 37 34 / 0);
+      backdrop-filter: blur(0px);
+    }
+  }
+
+  /* -----------------------------------------------------------------------
+     Respeta a quien pide menos movimiento.
+
+     Va acá, en `base`, y con !important: tiene que ganarle a CUALQUIER
+     animación declarada más abajo, incluidas las de las utilidades. Anular la
+     duración (y no la propiedad `animation`) mantiene el estado final: los
+     elementos que entran con opacity:0 igual terminan visibles.
+     ----------------------------------------------------------------------- */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
@@ -100,5 +299,164 @@
   }
   .no-scrollbar::-webkit-scrollbar {
     display: none;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Entrada escalonada.
+
+     Los ítems de una lista no entran todos juntos: entran uno atrás del otro,
+     como una costura que avanza.
+
+     El retraso sale del `:nth-child`, no de una variable que haya que pasar a
+     mano: una lista escalona por el solo hecho de ser una lista, y nadie tiene
+     que acordarse de numerar los ítems al agregar uno.
+
+     Se corta en el décimo: del once en adelante todos entran juntos con el
+     último retraso. Escalonar cincuenta filas haría que la última apareciera
+     casi tres segundos tarde — y eso ya no es elegante, es una app lenta.
+     --------------------------------------------------------------------------- */
+  .escalonar > * {
+    /* `backwards`, no `both`: si no, el `transform: none` del último fotograma
+       quedaría pegado y las tarjetas de la lista no se levantarían al pasar el
+       mouse (ver la nota larga arriba, en --animate-surgir). */
+    animation: surgir var(--t-lento) var(--ease-tela) backwards;
+    animation-delay: 550ms;
+  }
+  .escalonar > *:nth-child(1)  { animation-delay: 0ms; }
+  .escalonar > *:nth-child(2)  { animation-delay: 55ms; }
+  .escalonar > *:nth-child(3)  { animation-delay: 110ms; }
+  .escalonar > *:nth-child(4)  { animation-delay: 165ms; }
+  .escalonar > *:nth-child(5)  { animation-delay: 220ms; }
+  .escalonar > *:nth-child(6)  { animation-delay: 275ms; }
+  .escalonar > *:nth-child(7)  { animation-delay: 330ms; }
+  .escalonar > *:nth-child(8)  { animation-delay: 385ms; }
+  .escalonar > *:nth-child(9)  { animation-delay: 440ms; }
+  .escalonar > *:nth-child(10) { animation-delay: 495ms; }
+
+  /* ---------------------------------------------------------------------------
+     La puntada: el separador de la marca.
+
+     Una línea de guiones cortos, como el pespunte de una costura. Reemplaza a
+     la regla sólida en todo lo que sea decorativo (los bordes estructurales
+     siguen siendo sólidos: una puntada como borde de tarjeta sería ruido).
+     --------------------------------------------------------------------------- */
+  .puntada-h {
+    height: 1px;
+    /* Puntada corta y clara: tiene que leerse como un pespunte, no como una
+       línea de puntos de un cupón recortable. */
+    background-image: linear-gradient(
+      to right,
+      var(--color-line-strong) 0 3px,
+      transparent 3px 7px
+    );
+    background-size: 7px 1px;
+    background-repeat: repeat-x;
+  }
+
+  /* ---------------------------------------------------------------------------
+     Realce al pasar el mouse: la tarjeta se levanta apenas de la tela.
+
+     2px. No más: es un papel apoyado sobre otro, no un globo.
+     --------------------------------------------------------------------------- */
+  .alzar {
+    transition:
+      transform var(--t-medio) var(--ease-tela),
+      box-shadow var(--t-medio) var(--ease-tela),
+      border-color var(--t-medio) var(--ease-tela);
+  }
+  .alzar:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--sombra-2);
+  }
+  /* Al soltar el clic, la tarjeta vuelve a apoyarse: da la sensación de tacto. */
+  .alzar:active {
+    transform: translateY(0);
+    transition-duration: var(--t-rapido);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Brillo de seda: la carga.
+
+     Un reflejo que barre la superficie. `isolate` + `overflow-hidden` para que
+     el reflejo no se escape del borde redondeado.
+     --------------------------------------------------------------------------- */
+  .seda {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    background-color: color-mix(in oklab, var(--color-line) 55%, transparent);
+  }
+  .seda::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklab, var(--color-surface) 85%, transparent),
+      transparent
+    );
+    animation: seda 1.8s var(--ease-suave) infinite;
+  }
+
+  /* ---------------------------------------------------------------------------
+     El hilo que subraya lo activo.
+
+     Se estira desde el centro hacia los costados, como un hilo que se tensa.
+     Lo usa la navegación: la pestaña activa no «se pinta», se cose.
+     --------------------------------------------------------------------------- */
+  .hilo-subraya {
+    position: relative;
+  }
+  .hilo-subraya::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background-color: var(--color-brand);
+    transform: scaleX(0);
+    transition: transform var(--t-medio) var(--ease-tela);
+  }
+  .hilo-subraya[data-activo="true"]::after {
+    transform: scaleX(1);
+  }
+
+  /* ---------------------------------------------------------------------------
+     Barrido de luz sobre el botón primario.
+
+     Cruza una sola vez al pasar el mouse, en diagonal, como la luz sobre un
+     hilo de seda. Es el único adorno que se permite un botón.
+     --------------------------------------------------------------------------- */
+  .lustre {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .lustre::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(255, 255, 255, 0.22) 48%,
+      transparent 62%
+    );
+    transform: translateX(-100%);
+    transition: transform var(--t-lento) var(--ease-suave);
+  }
+  .lustre:hover::before,
+  .lustre:focus-visible::before {
+    transform: translateX(100%);
+  }
+
+  /* El trazo de hilo que se dibuja al montar. `--largo` = longitud del path. */
+  .dibujar {
+    stroke-dasharray: var(--largo, 1000);
+    animation: dibujar-hilo var(--dur, 1.8s) var(--ease-suave) both;
+    animation-delay: var(--retraso, 0ms);
   }
 }

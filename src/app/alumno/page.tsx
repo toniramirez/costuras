@@ -2,7 +2,9 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CalendarDays, MapPin, Pin, Scissors } from 'lucide-react';
 
+import { Puntada } from '@/components/brand/hilo';
 import { Badge } from '@/components/ui/badge';
+import { EmptyState } from '@/components/ui/states';
 import { requireStudent } from '@/lib/auth';
 import { novedadesDelAlumno } from '@/lib/services/comms';
 import { listarTalleresVisibles } from '@/lib/services/workshops';
@@ -41,19 +43,21 @@ export default async function AlumnoInicioPage() {
           Hola, {student.first_name}
         </h1>
         <p className="mt-0.5 text-sm text-muted">Esto es lo nuevo en la academia.</p>
+        <Puntada className="mt-4 w-16" />
       </header>
 
       {/* ── Novedades como flyer ─────────────────────────────────────────── */}
-      <section className="space-y-4">
+      <section className="escalonar space-y-4">
         {novedades.length === 0 ? (
-          <div className="rounded-card border border-dashed border-line-strong bg-surface/50 px-6 py-10 text-center">
-            <p className="text-sm text-muted">No hay novedades por ahora.</p>
-          </div>
+          <EmptyState
+            title="No hay novedades por ahora."
+            description="Cuando la academia publique algo, lo vas a ver acá."
+          />
         ) : (
           novedades.map((novedad) => (
             <article
               key={novedad.id}
-              className="overflow-hidden rounded-card border border-line bg-surface shadow-[0_1px_2px_rgba(43,37,34,0.04)]"
+              className="alzar overflow-hidden rounded-card border border-line bg-surface shadow-suave"
             >
               {novedad.imagenUrl && (
                 // El flyer se muestra completo: no se recorta. Una imagen vertical
@@ -115,7 +119,7 @@ export default async function AlumnoInicioPage() {
             Próximos talleres
           </h2>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="escalonar grid grid-cols-1 gap-3 sm:grid-cols-2">
             {talleres.map((taller) => {
               const lugares = taller.capacity - taller.confirmados;
               const completo = taller.capacity > 0 && lugares <= 0;
@@ -123,14 +127,16 @@ export default async function AlumnoInicioPage() {
               return (
                 <article
                   key={taller.id}
-                  className="overflow-hidden rounded-card border border-line bg-surface"
+                  className="alzar group overflow-hidden rounded-card border border-line bg-surface shadow-suave"
                 >
                   {taller.imagenUrl && (
+                    // La foto se acerca apenas al pasar el mouse. El recorte lo
+                    // aguanta el `overflow-hidden` de la tarjeta.
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={taller.imagenUrl}
                       alt=""
-                      className="h-32 w-full bg-canvas object-cover"
+                      className="h-32 w-full bg-canvas object-cover transition-transform duration-500 ease-[var(--ease-tela)] group-hover:scale-[1.03]"
                     />
                   )}
 
@@ -177,13 +183,17 @@ export default async function AlumnoInicioPage() {
       {/* Acceso al cuaderno: es lo otro que la alumna viene a hacer. */}
       <Link
         href="/alumno/proyectos"
-        className="flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4 transition-colors hover:bg-canvas"
+        className="alzar group flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4 shadow-suave hover:border-brand"
       >
         <div>
           <p className="text-sm font-semibold text-ink">Mi cuaderno</p>
           <p className="text-xs text-muted">Tus proyectos, fotos y anotaciones</p>
         </div>
-        <Scissors className="size-5 text-brand" aria-hidden />
+        {/* La tijera se abre al pasar el mouse. Es un guiño, y es la marca. */}
+        <Scissors
+          className="size-5 text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:-rotate-12 group-hover:scale-110"
+          aria-hidden
+        />
       </Link>
     </div>
   );

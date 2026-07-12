@@ -56,10 +56,12 @@ export function Dialog({
     <dialog
       ref={ref}
       aria-labelledby="dialog-title"
+      // La entrada, la salida y el velo del fondo son CSS puro (ver `dialog` en
+      // globals.css): `@starting-style` + `allow-discrete`. Acá no va ninguna
+      // clase de animación ni de backdrop — pisaría esas reglas por especificidad.
       className={cn(
-        'w-[calc(100%-2rem)] max-w-md rounded-card border border-line bg-surface p-0 text-ink shadow-xl',
-        'backdrop:bg-ink/40 backdrop:backdrop-blur-[2px]',
-        'open:animate-in',
+        'w-[calc(100%-2rem)] max-w-md rounded-card border border-line bg-surface p-0 text-ink',
+        'shadow-flotante',
         className,
       )}
       // El clic en el backdrop cierra. El clic adentro no debe propagarse.
