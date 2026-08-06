@@ -29,6 +29,8 @@ const MENSAJES_POR_RESTRICCION: Record<string, string> = {
   movement_amount_ck: 'El importe del movimiento no es válido.',
   groups_time_range: 'La hora de fin debe ser posterior a la de inicio.',
   rates_valid_range: 'La fecha de fin de vigencia no puede ser anterior a la de inicio.',
+  uq_glossary_term: 'Esa palabra ya está en el glosario (las tildes no cuentan como diferencia).',
+  uq_library_category: 'Ya existe una categoría con ese nombre en esta sección.',
 };
 
 type ErrorLike = {

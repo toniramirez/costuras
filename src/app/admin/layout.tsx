@@ -58,7 +58,8 @@ const AREAS: NavArea[] = [
   },
 
   // Lo que sale de la academia hacia los alumnos. Los talleres son eso: algo
-  // que se anuncia y a lo que se anotan.
+  // que se anuncia y a lo que se anotan. La biblioteca —centro de ayuda y
+  // moldería— también: es material que la academia publica y la alumna consulta.
   {
     href: '/admin/comunicados',
     label: 'Avisos',
@@ -67,6 +68,8 @@ const AREAS: NavArea[] = [
       { href: '/admin/comunicados', label: 'Comunicados', icon: 'comunicados' },
       { href: '/admin/novedades', label: 'Novedades', icon: 'novedades' },
       { href: '/admin/talleres', label: 'Talleres', icon: 'talleres' },
+      { href: '/admin/ayuda', label: 'Centro de ayuda', icon: 'ayuda' },
+      { href: '/admin/molderia', label: 'Moldería', icon: 'molderia' },
     ],
   },
 

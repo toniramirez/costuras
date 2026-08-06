@@ -112,7 +112,7 @@ usuarios de Auth, webhook de Mercado Pago y rutas de cron.
 
 ```
 @/components/ui/button      Button (loading bloquea el doble envío)
-@/components/ui/field       Input, Textarea, Select, MoneyInput, Field
+@/components/ui/field       Input, Textarea, Select, Checkbox, MoneyInput, Field
 @/components/ui/card        Card, CardHeader, CardTitle, CardContent, StatCard
 @/components/ui/badge       Badge, StatusBadge
 @/components/ui/dialog      Dialog, ConfirmDialog

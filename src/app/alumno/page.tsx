@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { CalendarDays, MapPin, Pin, Scissors } from 'lucide-react';
+import { CalendarDays, LifeBuoy, MapPin, Pin, Ruler, Scissors } from 'lucide-react';
 
 import { Puntada } from '@/components/brand/hilo';
 import { Badge } from '@/components/ui/badge';
@@ -180,21 +180,74 @@ export default async function AlumnoInicioPage() {
         </section>
       )}
 
-      {/* Acceso al cuaderno: es lo otro que la alumna viene a hacer. */}
-      <Link
-        href="/alumno/proyectos"
-        className="alzar group flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4 shadow-suave hover:border-brand"
-      >
-        <div>
-          <p className="text-sm font-semibold text-ink">Mi cuaderno</p>
-          <p className="text-xs text-muted">Tus proyectos, fotos y anotaciones</p>
-        </div>
-        {/* La tijera se abre al pasar el mouse. Es un guiño, y es la marca. */}
-        <Scissors
-          className="size-5 text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:-rotate-12 group-hover:scale-110"
-          aria-hidden
+      {/* ── Los tres accesos ─────────────────────────────────────────────────
+          El cuaderno es lo que la alumna viene a hacer; la ayuda y la moldería
+          son lo que necesita cuando se traba en el medio. Van juntos y en ese
+          orden: primero lo propio, después lo que la academia le presta. */}
+      <nav aria-label="Accesos" className="space-y-2.5">
+        <Acceso
+          href="/alumno/proyectos"
+          titulo="Mi cuaderno"
+          bajada="Tus proyectos, fotos y anotaciones"
+          // La tijera se abre al pasar el mouse. Es un guiño, y es la marca.
+          icono={
+            <Scissors
+              className="size-5 text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:-rotate-12 group-hover:scale-110"
+              aria-hidden
+            />
+          }
         />
-      </Link>
+
+        <Acceso
+          href="/alumno/ayuda"
+          titulo="¡Necesito ayuda!"
+          bajada="Videos, guías, glosario y dudas frecuentes"
+          icono={
+            <LifeBuoy
+              className="size-5 text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:rotate-45"
+              aria-hidden
+            />
+          }
+        />
+
+        <Acceso
+          href="/alumno/molderia"
+          titulo="Moldería digital"
+          bajada="Moldes en PDF para abrir e imprimir"
+          icono={
+            <Ruler
+              className="size-5 text-brand transition-transform duration-300 ease-[var(--ease-tela)] group-hover:-rotate-12"
+              aria-hidden
+            />
+          }
+        />
+      </nav>
     </div>
+  );
+}
+
+/** Tarjeta-botón de los accesos del pie del inicio. */
+function Acceso({
+  href,
+  titulo,
+  bajada,
+  icono,
+}: {
+  href: string;
+  titulo: string;
+  bajada: string;
+  icono: React.ReactNode;
+}) {
+  return (
+    <Link
+      href={href}
+      className="alzar group flex items-center justify-between gap-3 rounded-card border border-line bg-surface p-4 shadow-suave hover:border-brand"
+    >
+      <div>
+        <p className="text-sm font-semibold text-ink">{titulo}</p>
+        <p className="text-xs text-muted">{bajada}</p>
+      </div>
+      {icono}
+    </Link>
   );
 }

@@ -147,6 +147,58 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   );
 });
 
+export interface CheckboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  hint?: string;
+  error?: string;
+}
+
+/**
+ * Casilla de verificación.
+ *
+ * La etiqueta envuelve al control (no va al lado con un `for`): así todo el
+ * bloque —texto incluido— es zona de toque. En un celular, apuntarle a un
+ * cuadradito de 16 píxeles con el pulgar es una prueba de puntería.
+ */
+export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(function Checkbox(
+  { className, label, hint, error, id, ...props },
+  ref,
+) {
+  const generado = useId();
+  const inputId = id ?? generado;
+
+  return (
+    <div className="space-y-1.5">
+      <label
+        htmlFor={inputId}
+        className={cn(
+          'flex cursor-pointer items-start gap-2.5 rounded-xl border border-line-strong bg-surface px-3.5 py-2.5',
+          'transition-colors hover:border-brand',
+          className,
+        )}
+      >
+        <input
+          ref={ref}
+          id={inputId}
+          type="checkbox"
+          aria-invalid={error ? true : undefined}
+          className="mt-0.5 size-4 shrink-0 rounded border-line-strong text-brand focus:ring-2 focus:ring-brand/20"
+          {...props}
+        />
+        <span className="min-w-0">
+          <span className="block text-sm font-medium text-ink">{label}</span>
+          {hint && <span className="mt-0.5 block text-xs text-muted">{hint}</span>}
+        </span>
+      </label>
+      {error && (
+        <p role="alert" className="text-xs font-medium text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+});
+
 /**
  * Importe en pesos. El formulario trabaja en PESOS y la conversión a centavos
  * se hace al enviar (ver `pesosToCents`): en la base el dinero es SIEMPRE

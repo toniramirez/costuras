@@ -28,6 +28,8 @@ const RUTAS_ADMIN = [
   '/admin/asistencia/historial', '/admin/recuperaciones', '/admin/proyectos',
   '/admin/proyectos/galeria', '/admin/talleres', '/admin/comunicados', '/admin/novedades',
   '/admin/notificaciones', '/admin/auditoria', '/admin/configuracion',
+  '/admin/ayuda', '/admin/ayuda?seccion=glosario', '/admin/ayuda?seccion=sugerencias',
+  '/admin/molderia',
   // Con filtros y paginación: es donde explotaría el bug de rangoPagina.
   '/admin/alumnos?q=fer&estado=activo&pagina=1',
   '/admin/cuotas?estado=deudores&pagina=1',
@@ -41,6 +43,8 @@ const RUTAS_ALUMNO = [
   '/alumno/asistencia', '/alumno/asistencia?pagina=1', '/alumno/recuperaciones',
   '/alumno/comunicados', '/alumno/novedades', '/alumno/talleres',
   '/alumno/perfil', '/alumno/notificaciones',
+  '/alumno/ayuda', '/alumno/ayuda?q=maquina', '/alumno/ayuda/glosario',
+  '/alumno/ayuda/glosario?q=hilvan', '/alumno/molderia',
 ];
 
 /** Cookie con el formato de @supabase/ssr (base64 + troceado si es larga). */

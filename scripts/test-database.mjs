@@ -663,6 +663,159 @@ const leidos = await one(`
 eq('La administradora ve cuántos leyeron', leidos.leidos, 1);
 eq('…sobre el total de destinatarios', leidos.total, 2);
 
+// ── BIBLIOTECA (centro de ayuda, glosario y moldería) ───────────────────────
+// Lo que hay que garantizar: la alumna LEE lo publicado y NADA MÁS. Ni los
+// borradores, ni las sugerencias de las demás, ni la posibilidad de escribir.
+section('Biblioteca · Centro de ayuda, glosario y moldería');
+await asUser(admin.id);
+
+const catAyuda = await one(`
+  select id from public.library_categories where scope = 'ayuda' order by sort_order limit 1`);
+ok('La migración deja categorías iniciales cargadas', !!catAyuda.id);
+
+const contPublicado = await one(`
+  insert into public.help_contents (category_id, kind, title, body, is_published)
+  values ($1, 'texto', 'Cómo enhebrar la máquina', 'Primero pasás el hilo…', true)
+  returning id`, [catAyuda.id]);
+const contBorrador = await one(`
+  insert into public.help_contents (category_id, kind, title, body, is_published)
+  values ($1, 'texto', 'Borrador sin terminar', 'A medio escribir', false)
+  returning id`, [catAyuda.id]);
+
+const molde = await one(`
+  insert into public.digital_patterns (title, storage_path, is_published)
+  values ('Falda recta', 'molderia/x/falda.pdf', true) returning id`);
+const moldeBorrador = await one(`
+  insert into public.digital_patterns (title, is_published)
+  values ('Molde a medio subir', false) returning id`);
+
+await one(`
+  insert into public.glossary_terms (term, definition, usage_notes)
+  values ('Hilván', 'Costura provisoria de puntadas largas.', 'Para probar el calce.')
+  returning id`);
+await one(`
+  insert into public.glossary_terms (term, definition)
+  values ('Bies', 'Tira de tela cortada en diagonal.') returning id`);
+await one(`
+  insert into public.glossary_terms (term, definition, is_published)
+  values ('Éntredós', 'Todavía sin revisar.', false) returning id`);
+
+// Orden alfabético e insensible a acentos: sale de la columna generada sort_key.
+const ordenados = await all(`select term from public.glossary_terms order by sort_key`);
+eq('El glosario se ordena solo, alfabéticamente', ordenados.map((t) => t.term).join(','),
+  'Bies,Éntredós,Hilván');
+
+const buscaSinTilde = await all(`
+  select term from public.glossary_terms where search_key like '%hilvan%'`);
+eq('Buscar «hilvan» sin tilde encuentra «Hilván»', buscaSinTilde.length, 1);
+
+await rejects('No se puede cargar dos veces la misma palabra (aunque cambien las tildes)',
+  () => db.query(`insert into public.glossary_terms (term, definition) values ('hilvan', 'Repetida')`),
+  'uq_glossary_term');
+
+// ── Lo que ve la alumna ──
+await asUser(userAna.id);
+
+const contVisibles = await all(`select id from public.help_contents`);
+eq('La alumna ve el contenido publicado', contVisibles.length, 1);
+eq('…y NO ve el borrador', contVisibles.some((c) => c.id === contBorrador.id), false);
+
+const moldesVisibles = await all(`select id from public.digital_patterns`);
+eq('La alumna ve el molde publicado', moldesVisibles.length, 1);
+eq('…y NO ve el molde a medio subir', moldesVisibles.some((m) => m.id === moldeBorrador.id), false);
+
+const terminosVisibles = await all(`select id from public.glossary_terms`);
+eq('La alumna ve solo los términos publicados', terminosVisibles.length, 2);
+
+await rejects('La alumna NO puede publicar contenido en el centro de ayuda',
+  () => db.query(`insert into public.help_contents (kind, title, body) values ('texto', 'Mío', 'x')`),
+  'row-level security');
+
+await rejects('La alumna NO puede crear categorías',
+  () => db.query(`insert into public.library_categories (scope, name) values ('ayuda', 'La mía')`),
+  'row-level security');
+
+await rejects('La alumna NO puede crear moldes',
+  () => db.query(`insert into public.digital_patterns (title) values ('Trucho')`),
+  'row-level security');
+
+// OJO: cuando la RLS bloquea un UPDATE/DELETE no hay error, hay 0 filas.
+const editaContenido = await db.query(
+  `update public.help_contents set title = 'Editado por la alumna' where id = $1`, [contPublicado.id]);
+eq('La alumna NO puede editar el contenido (RLS: 0 filas afectadas)', editaContenido.affectedRows, 0);
+
+const borraMolde = await db.query(`delete from public.digital_patterns where id = $1`, [molde.id]);
+eq('La alumna NO puede eliminar un molde (RLS: 0 filas afectadas)', borraMolde.affectedRows, 0);
+
+const borraTermino = await db.query(`delete from public.glossary_terms where term = 'Bies'`);
+eq('La alumna NO puede eliminar un término (RLS: 0 filas afectadas)', borraTermino.affectedRows, 0);
+
+// ── Sugerencias: lo ÚNICO que la alumna escribe, y no lo puede leer ──
+// Sin RETURNING: `INSERT … RETURNING` exigiría que la alumna pudiera LEER la
+// fila, y justamente no puede. Es la misma razón por la que la server action
+// `sugerirTermino` inserta sin pedir el id de vuelta.
+const insertoSugerencia = await db.query(`
+  insert into public.glossary_suggestions (student_id, term, notes)
+  values ($1, 'Fruncido', 'Lo dijo la profe con la manga')`, [ana.id]);
+eq('La alumna SÍ puede sugerir una palabra', insertoSugerencia.affectedRows, 1);
+
+await rejects('…pero NO a nombre de otra alumna',
+  () => db.query(`insert into public.glossary_suggestions (student_id, term) values ($1, 'Trucha')`,
+    [beto.id]),
+  'row-level security');
+
+const sugVisiblesAna = await all(`select id from public.glossary_suggestions`);
+eq('La sugerencia NO se publica: ni siquiera la ve quien la escribió', sugVisiblesAna.length, 0);
+
+await asUser(userBeto.id);
+const sugVisiblesBeto = await all(`select id from public.glossary_suggestions`);
+eq('Otra alumna tampoco ve las sugerencias', sugVisiblesBeto.length, 0);
+
+await asUser(admin.id);
+const sugVisiblesAdmin = await all(`select id, term, status from public.glossary_suggestions`);
+eq('La administradora SÍ ve la bandeja de sugerencias', sugVisiblesAdmin.length, 1);
+eq('…y entra como pendiente, sin publicarse', sugVisiblesAdmin[0].status, 'pendiente');
+const sugAna = sugVisiblesAdmin[0];
+
+// Usar la sugerencia para crear la ficha: la palabra queda enlazada y marcada.
+const terminoNuevo = await one(`
+  insert into public.glossary_terms (term, definition)
+  values ('Fruncido', 'Tela recogida con puntadas para dar volumen.') returning id`);
+await db.query(`
+  update public.glossary_suggestions set status = 'usada', term_id = $1 where id = $2`,
+  [terminoNuevo.id, sugAna.id]);
+const sugUsada = await one(`select status, term_id from public.glossary_suggestions where id = $1`,
+  [sugAna.id]);
+eq('La sugerencia usada queda marcada', sugUsada.status, 'usada');
+eq('…y enlazada a la ficha que se creó', sugUsada.term_id, terminoNuevo.id);
+
+// Borrar una categoría NO se lleva puesto el material.
+await db.query(`delete from public.library_categories where id = $1`, [catAyuda.id]);
+const huerfano = await one(`select category_id from public.help_contents where id = $1`,
+  [contPublicado.id]);
+eq('Al borrar una categoría, su contenido queda SIN categoría (no se borra)',
+  huerfano.category_id, null);
+
+// ── PROYECTOS: la alumna borra los suyos ────────────────────────────────────
+// Es el otro cambio del pedido: antes dependía de la administradora.
+section('Proyectos · La alumna elimina los suyos');
+await asUser(userAna.id);
+
+const borraAjeno = await db.query(`delete from public.projects where id = $1`, [proyBeto.id]);
+eq('Una alumna NO puede eliminar el proyecto de otra (RLS: 0 filas afectadas)',
+  borraAjeno.affectedRows, 0);
+
+const borraPropio = await db.query(`delete from public.projects where id = $1`, [proyAna.id]);
+eq('Una alumna SÍ puede eliminar SU propio proyecto', borraPropio.affectedRows, 1);
+
+await asService();
+const entradasHuerfanas = await all(`select id from public.project_entries where project_id = $1`,
+  [proyAna.id]);
+eq('…y sus páginas se van en cascada', entradasHuerfanas.length, 0);
+
+const proyBetoIntacto = await all(`select id from public.projects where id = $1`, [proyBeto.id]);
+eq('…mientras que el proyecto de la otra alumna sigue intacto', proyBetoIntacto.length, 1);
+
 // ── SEGURIDAD: EL ROL ANÓNIMO ───────────────────────────────────────────────
 // Alguien SIN sesión pegándole directo a /rest/v1/… Es el vector que se nos
 // había escapado: PostgreSQL concede EXECUTE a PUBLIC por defecto y anon es
@@ -676,6 +829,14 @@ await rejects('anon NO puede leer cuotas',
   () => db.query(`select * from public.monthly_fees`), 'permission denied');
 await rejects('anon NO puede leer cajas',
   () => db.query(`select * from public.cash_accounts`), 'permission denied');
+await rejects('anon NO puede leer el centro de ayuda',
+  () => db.query(`select * from public.help_contents`), 'permission denied');
+await rejects('anon NO puede leer el glosario',
+  () => db.query(`select * from public.glossary_terms`), 'permission denied');
+await rejects('anon NO puede leer las sugerencias de las alumnas',
+  () => db.query(`select * from public.glossary_suggestions`), 'permission denied');
+await rejects('anon NO puede leer la moldería',
+  () => db.query(`select * from public.digital_patterns`), 'permission denied');
 
 // Las RPC que mueven dinero: acá estaba el agujero.
 await rejects('anon NO puede aprobar comprobantes (RPC)',

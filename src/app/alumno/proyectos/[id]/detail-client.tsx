@@ -23,7 +23,12 @@ import { Dialog, ConfirmDialog } from '@/components/ui/dialog';
 import { FileUploader } from '@/components/project/file-uploader';
 import { ProjectForm } from '@/components/project/project-form';
 import { esquemaEntrada, type DatosEntrada } from '@/lib/validations/projects';
-import { guardarEntrada, eliminarEntrada, cambiarEstadoProyecto } from '@/app/actions/projects';
+import {
+  guardarEntrada,
+  eliminarEntrada,
+  eliminarProyecto,
+  cambiarEstadoProyecto,
+} from '@/app/actions/projects';
 import type { Archivo, Entrada, ProyectoConAlumno } from '@/lib/services/projects';
 import type { LimitesArchivo } from '@/lib/storage';
 import { DIFICULTAD_PROYECTO, ESTADO_PROYECTO } from '@/lib/labels';
@@ -61,6 +66,7 @@ export function DetailClient({
   const router = useRouter();
   const [escribiendo, setEscribiendo] = useState<Entrada | null | undefined>(undefined);
   const [aBorrar, setABorrar] = useState<Entrada | null>(null);
+  const [borrandoProyecto, setBorrandoProyecto] = useState(false);
   const [fichaAbierta, setFichaAbierta] = useState(false);
   const [editandoFicha, setEditandoFicha] = useState(false);
 
@@ -92,6 +98,24 @@ export function DetailClient({
     const r = await eliminarEntrada(aBorrar.id);
     r.ok ? toast.success('Página eliminada') : toast.error(r.error);
     router.refresh();
+  }
+
+  /**
+   * Borrar el proyecto entero.
+   *
+   * Es de la alumna y lo borra la alumna: la política `projects_owner_delete` ya
+   * lo permitía en la base desde el principio, pero no había por dónde hacerlo y
+   * había que pedírselo a la academia. Si sale bien no refrescamos: volvemos a la
+   * estantería, porque esta pantalla acaba de dejar de existir.
+   */
+  async function borrarProyecto() {
+    const r = await eliminarProyecto(proyecto.id);
+    if (!r.ok) {
+      toast.error(r.error);
+      return;
+    }
+    toast.success('Proyecto eliminado');
+    router.push('/alumno/proyectos');
   }
 
   return (
@@ -345,6 +369,25 @@ export function DetailClient({
         )}
       </div>
 
+      {/* ── Eliminar el proyecto ─────────────────────────────────────────────
+          Va al final y en su propio recuadro, lejos de «Anotar avance». Es la
+          única acción de esta pantalla que no se puede deshacer: no debería
+          poder tocarse de casualidad mientras se pasa el dedo por el cuaderno. */}
+      <section className="mt-10 rounded-card border border-line px-4 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-sm font-medium text-ink">Eliminar este proyecto</p>
+            <p className="mt-0.5 text-xs text-muted">
+              Se borran también sus páginas y todas sus fotos.
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => setBorrandoProyecto(true)}>
+            <Trash2 className="size-4 text-danger" aria-hidden />
+            Eliminar
+          </Button>
+        </div>
+      </section>
+
       {escribiendo !== undefined && (
         <PaginaForm
           projectId={proyecto.id}
@@ -371,6 +414,16 @@ export function DetailClient({
         onConfirm={borrarPagina}
         title="Eliminar esta página"
         description="Se borra la anotación y también sus fotos. No se puede deshacer."
+      />
+
+      <ConfirmDialog
+        open={borrandoProyecto}
+        onClose={() => setBorrandoProyecto(false)}
+        onConfirm={borrarProyecto}
+        title={`Eliminar «${proyecto.title}»`}
+        description="¿Estás segura de que querés eliminar este proyecto? Esta acción no se puede deshacer."
+        confirmLabel="Sí, eliminarlo"
+        cancelLabel="No, volver al proyecto"
       />
     </div>
   );

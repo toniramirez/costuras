@@ -554,6 +554,72 @@ export type Database = {
           },
         ];
       };
+      digital_patterns: {
+        Row: {
+          id: string;
+          category_id: string | null;
+          title: string;
+          description: string | null;
+          storage_path: string | null;
+          file_name: string | null;
+          size_bytes: number | null;
+          cover_image_path: string | null;
+          sort_order: number;
+          is_published: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          search_key: string | null;
+        };
+        Insert: {
+          id?: string;
+          category_id?: string | null;
+          title: string;
+          description?: string | null;
+          storage_path?: string | null;
+          file_name?: string | null;
+          size_bytes?: number | null;
+          cover_image_path?: string | null;
+          sort_order?: number;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          search_key?: string | null;
+        };
+        Update: {
+          id?: string;
+          category_id?: string | null;
+          title?: string;
+          description?: string | null;
+          storage_path?: string | null;
+          file_name?: string | null;
+          size_bytes?: number | null;
+          cover_image_path?: string | null;
+          sort_order?: number;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          search_key?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "digital_patterns_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "library_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "digital_patterns_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       enrollments: {
         Row: {
           id: string;
@@ -805,6 +871,113 @@ export type Database = {
           },
         ];
       };
+      glossary_suggestions: {
+        Row: {
+          id: string;
+          student_id: string | null;
+          term: string;
+          notes: string | null;
+          status: Database["public"]["Enums"]["suggestion_status"];
+          term_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          student_id?: string | null;
+          term: string;
+          notes?: string | null;
+          status?: Database["public"]["Enums"]["suggestion_status"];
+          term_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          student_id?: string | null;
+          term?: string;
+          notes?: string | null;
+          status?: Database["public"]["Enums"]["suggestion_status"];
+          term_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "glossary_suggestions_student_id_fkey";
+            columns: ["student_id"];
+            isOneToOne: false;
+            referencedRelation: "students";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "glossary_suggestions_term_id_fkey";
+            columns: ["term_id"];
+            isOneToOne: false;
+            referencedRelation: "glossary_terms";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      glossary_terms: {
+        Row: {
+          id: string;
+          term: string;
+          definition: string;
+          usage_notes: string | null;
+          image_path: string | null;
+          video_path: string | null;
+          video_url: string | null;
+          pdf_path: string | null;
+          is_published: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          sort_key: string | null;
+          search_key: string | null;
+        };
+        Insert: {
+          id?: string;
+          term: string;
+          definition: string;
+          usage_notes?: string | null;
+          image_path?: string | null;
+          video_path?: string | null;
+          video_url?: string | null;
+          pdf_path?: string | null;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          sort_key?: string | null;
+          search_key?: string | null;
+        };
+        Update: {
+          id?: string;
+          term?: string;
+          definition?: string;
+          usage_notes?: string | null;
+          image_path?: string | null;
+          video_path?: string | null;
+          video_url?: string | null;
+          pdf_path?: string | null;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          sort_key?: string | null;
+          search_key?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "glossary_terms_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       groups: {
         Row: {
           id: string;
@@ -859,6 +1032,122 @@ export type Database = {
           {
             foreignKeyName: "groups_professor_id_fkey";
             columns: ["professor_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      help_contents: {
+        Row: {
+          id: string;
+          category_id: string | null;
+          kind: Database["public"]["Enums"]["help_content_kind"];
+          title: string;
+          description: string | null;
+          body: string | null;
+          storage_path: string | null;
+          file_name: string | null;
+          mime_type: string | null;
+          size_bytes: number | null;
+          external_url: string | null;
+          sort_order: number;
+          is_published: boolean;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+          search_key: string | null;
+        };
+        Insert: {
+          id?: string;
+          category_id?: string | null;
+          kind?: Database["public"]["Enums"]["help_content_kind"];
+          title: string;
+          description?: string | null;
+          body?: string | null;
+          storage_path?: string | null;
+          file_name?: string | null;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          external_url?: string | null;
+          sort_order?: number;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          search_key?: string | null;
+        };
+        Update: {
+          id?: string;
+          category_id?: string | null;
+          kind?: Database["public"]["Enums"]["help_content_kind"];
+          title?: string;
+          description?: string | null;
+          body?: string | null;
+          storage_path?: string | null;
+          file_name?: string | null;
+          mime_type?: string | null;
+          size_bytes?: number | null;
+          external_url?: string | null;
+          sort_order?: number;
+          is_published?: boolean;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+          search_key?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "help_contents_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "library_categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "help_contents_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_categories: {
+        Row: {
+          id: string;
+          scope: Database["public"]["Enums"]["library_scope"];
+          name: string;
+          description: string | null;
+          sort_order: number;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          scope: Database["public"]["Enums"]["library_scope"];
+          name: string;
+          description?: string | null;
+          sort_order?: number;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          scope?: Database["public"]["Enums"]["library_scope"];
+          name?: string;
+          description?: string | null;
+          sort_order?: number;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_categories_created_by_fkey";
+            columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "profiles";
             referencedColumns: ["id"];
@@ -2243,6 +2532,8 @@ export type Database = {
       charge_mode: "mes_completo" | "proporcional" | "manual" | "mes_siguiente";
       class_session_status: "programada" | "realizada" | "cancelada";
       fee_status: "pendiente" | "comprobante_pendiente" | "pagada" | "vencida" | "anulada" | "bonificada";
+      help_content_kind: "video" | "imagen" | "pdf" | "texto";
+      library_scope: "ayuda" | "molderia";
       movement_type: "ingreso" | "gasto" | "ajuste";
       notification_audience: "admin" | "alumno";
       payment_status: "pendiente" | "confirmado" | "anulado" | "rechazado";
@@ -2257,6 +2548,7 @@ export type Database = {
       recovery_status: "disponible" | "reservada" | "utilizada" | "vencida" | "cancelada";
       registration_mode: "unica" | "anual";
       student_status: "pendiente" | "activo" | "pausado" | "baja";
+      suggestion_status: "pendiente" | "usada" | "descartada";
       workshop_reg_status: "pendiente" | "pendiente_pago" | "confirmada" | "lista_espera" | "cancelada" | "asistio" | "no_asistio";
       workshop_status: "borrador" | "publicado" | "inscripcion_abierta" | "cupo_completo" | "finalizado" | "cancelado";
     };
@@ -2353,6 +2645,12 @@ export type Database = {
       next_receipt_number: {
         Args: Record<PropertyKey, never>;
         Returns: number;
+      };
+      nombre_mes: {
+        Args: {
+          p_month: number;
+        };
+        Returns: string;
       };
       notify_upcoming_expirations: {
         Args: {

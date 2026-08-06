@@ -83,6 +83,20 @@ export const ESTADO_INSCRIPCION: Record<Enums<'workshop_reg_status'>, Etiqueta> 
   no_asistio: { label: 'No asistió', tone: 'danger' },
 };
 
+/** Tipo de publicación del centro de ayuda. Define cómo se muestra en pantalla. */
+export const TIPO_CONTENIDO: Record<Enums<'help_content_kind'>, Etiqueta> = {
+  video: { label: 'Video', tone: 'brand' },
+  imagen: { label: 'Imagen', tone: 'info' },
+  pdf: { label: 'PDF', tone: 'warning' },
+  texto: { label: 'Texto', tone: 'neutral' },
+};
+
+export const ESTADO_SUGERENCIA: Record<Enums<'suggestion_status'>, Etiqueta> = {
+  pendiente: { label: 'Sin responder', tone: 'warning' },
+  usada: { label: 'Ya está en el glosario', tone: 'success' },
+  descartada: { label: 'Descartada', tone: 'neutral' },
+};
+
 export const MODO_COBRO: Record<Enums<'charge_mode'>, Etiqueta> = {
   mes_completo: { label: 'Cobrar mes completo', tone: 'neutral' },
   proporcional: { label: 'Cobrar importe proporcional', tone: 'neutral' },
